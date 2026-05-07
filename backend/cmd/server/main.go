@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -42,30 +41,32 @@ func main() {
 	api := app.Group("/api")
 
 	// --- PUBLIC ROUTES ---
-	// Sets up /api/register and /api/login
 	handlers.SetupAuthRoutes(api)
 
 	// --- PROTECTED ROUTES (Requires valid JWT) ---
 	protected := api.Group("/", middleware.Protected())
+	adminOnly := middleware.RequireRole("admin")
 
-	// Crew Routes Example
-	crewGroup := protected.Group("/crew")
-	crewGroup.Get("/dashboard", func(c *fiber.Ctx) error {
-		// Example of accessing values injected by our JWT middleware
-		userID := c.Locals("user_id")
-		role := c.Locals("role")
-		return c.JSON(fiber.Map{
-			"message": fmt.Sprintf("Welcome %v! You are logged in as a %v.", userID, role),
-		})
-	})
+	// Ships (Admin Only)
+	shipsGroup := protected.Group("/ships", adminOnly)
+	handlers.SetupShipRoutes(shipsGroup)
 
-	// --- ADMIN ROUTES (Requires valid JWT AND 'admin' role) ---
-	adminGroup := protected.Group("/admin", middleware.RequireRole("admin"))
-	adminGroup.Get("/dashboard", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"message": "Welcome Admin! You have access to sensitive operations.",
-		})
-	})
+	// Maintenance Tasks
+	tasksGroup := protected.Group("/tasks")
+	tasksGroup.Post("/", adminOnly, handlers.CreateTask) // Admin only
+	tasksGroup.Get("/", handlers.GetTasks)                // Crew & Admin
+	tasksGroup.Patch("/:id/status", handlers.UpdateTaskStatus) // Crew
+	tasksGroup.Post("/:id/notes", handlers.AddTaskNotes)       // Crew
+
+	// Safety Drills
+	drillsGroup := protected.Group("/drills")
+	drillsGroup.Post("/", adminOnly, handlers.CreateDrill) // Admin only
+	drillsGroup.Get("/", handlers.GetDrills)               // Crew & Admin
+	drillsGroup.Post("/:id/attend", handlers.AttendDrill)  // Crew
+
+	// Compliance (Admin Only)
+	complianceGroup := protected.Group("/compliance", adminOnly)
+	handlers.SetupComplianceRoutes(complianceGroup)
 
 	// 5. Start the server
 	appPort := os.Getenv("PORT")
