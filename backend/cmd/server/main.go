@@ -8,6 +8,7 @@ import (
 	"github.com/ashmitsharp/fathom/internal/handlers"
 	"github.com/ashmitsharp/fathom/internal/middleware"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -26,8 +27,12 @@ func main() {
 		AppName: "Fathom Maritime Operations Platform",
 	})
 
-	// Add request logger middleware
+	// Add request logger and CORS middleware
 	app.Use(logger.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 
 	// Health check endpoint
 	app.Get("/health", func(c *fiber.Ctx) error {
