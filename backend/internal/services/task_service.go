@@ -17,11 +17,16 @@ func (s *TaskService) CreateTask(task *models.MaintenanceTask) error {
 }
 
 // GetTasks retrieves tasks with optional filters
-func (s *TaskService) GetTasks(shipID, status, date string) ([]models.MaintenanceTask, error) {
+func (s *TaskService) GetTasks(shipID, status, date, assignedTo string) ([]models.MaintenanceTask, error) {
 	var tasks []models.MaintenanceTask
-	query := config.DB.Model(&models.MaintenanceTask{})
+	query := config.DB.Model(&models.MaintenanceTask{}).
+		Preload("Assignee").
+		Preload("Ship")
 	if shipID != "" {
 		query = query.Where("ship_id = ?", shipID)
+	}
+	if assignedTo != "" {
+		query = query.Where("assigned_to = ?", assignedTo)
 	}
 	if status != "" {
 		query = query.Where("status = ?", status)

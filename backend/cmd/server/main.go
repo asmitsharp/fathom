@@ -54,6 +54,10 @@ func main() {
 	adminOnly := middleware.RequireRole("admin")
 	protected := middleware.Protected()
 
+	// Users (Admin Only)
+	usersGroup := api.Group("/users", protected, adminOnly)
+	handlers.SetupUserRoutes(usersGroup)
+
 	// Ships (Admin Only)
 	shipsGroup := api.Group("/ships", protected, adminOnly)
 	handlers.SetupShipRoutes(shipsGroup)

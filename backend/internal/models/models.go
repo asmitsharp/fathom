@@ -56,6 +56,8 @@ type SafetyDrill struct {
 
 	ScheduledDate time.Time `gorm:"index" json:"scheduled_date"`
 
+	Attended bool `gorm:"-" json:"attended,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 }
 

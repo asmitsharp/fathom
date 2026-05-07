@@ -34,8 +34,14 @@ func CreateDrill(c *fiber.Ctx) error {
 func GetDrills(c *fiber.Ctx) error {
 	shipID := c.Query("ship_id")
 	date := c.Query("date")
-	
-	drills, err := drillService.GetDrills(shipID, date)
+
+	crewIDStr := fmt.Sprintf("%v", c.Locals("user_id"))
+	crewID, err := uuid.Parse(crewIDStr)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user identity"})
+	}
+
+	drills, err := drillService.GetDrills(shipID, date, crewID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

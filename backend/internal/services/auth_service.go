@@ -8,6 +8,7 @@ import (
 	"github.com/ashmitsharp/fathom/internal/config"
 	"github.com/ashmitsharp/fathom/internal/models"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,6 +19,7 @@ type RegisterInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Role     string `json:"role"` // e.g., "admin" or "crew"
+	ShipID   string `json:"ship_id"`
 }
 
 // RegisterUser registers a new user
@@ -32,6 +34,13 @@ func (s *AuthService) RegisterUser(input RegisterInput) (*models.User, error) {
 		Email:        input.Email,
 		PasswordHash: string(hashedPassword),
 		Role:         input.Role,
+	}
+
+	if input.ShipID != "" {
+		parsedShipID, err := uuid.Parse(input.ShipID)
+		if err == nil {
+			user.ShipID = &parsedShipID
+		}
 	}
 
 	// Default role to "crew" if none is provided

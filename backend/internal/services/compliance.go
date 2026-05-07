@@ -9,11 +9,13 @@ import (
 
 // ComplianceReport holds compliance data
 type ComplianceReport struct {
-	MaintenanceScore float64                  `json:"maintenance_score"`
-	DrillScore       float64                  `json:"drill_score"`
-	OverallScore     float64                  `json:"overall_score"`
-	OverdueTasks     []models.MaintenanceTask `json:"overdue_tasks"`
-	MissedDrills     []models.SafetyDrill     `json:"missed_drills"`
+	MaintenanceScore   float64                  `json:"maintenance_score"`
+	DrillScore         float64                  `json:"drill_score"`
+	AttendedDrillCount int64                    `json:"attended_drill_count"`
+	MissedDrillCount   int64                    `json:"missed_drill_count"`
+	OverallScore       float64                  `json:"overall_score"`
+	OverdueTasks       []models.MaintenanceTask `json:"overdue_tasks"`
+	MissedDrills       []models.SafetyDrill     `json:"missed_drills"`
 }
 
 // ComplianceService handles compliance calculations
@@ -34,7 +36,7 @@ func (s *ComplianceService) GetShipCompliance(shipID string) (*ComplianceReport,
 	var missedDrills []models.SafetyDrill
 
 	config.DB.Model(&models.SafetyDrill{}).Where("ship_id = ? AND scheduled_date < ?", shipID, time.Now()).Count(&totalDrills)
-	
+
 	config.DB.Model(&models.SafetyDrill{}).
 		Joins("JOIN drill_attendances ON drill_attendances.drill_id = safety_drills.id").
 		Where("safety_drills.ship_id = ? AND drill_attendances.attended = ?", shipID, true).
@@ -42,6 +44,7 @@ func (s *ComplianceService) GetShipCompliance(shipID string) (*ComplianceReport,
 		Count(&attendedDrills)
 
 	config.DB.Where("ship_id = ? AND scheduled_date < ? AND id NOT IN (SELECT drill_id FROM drill_attendances WHERE attended = ?)", shipID, time.Now(), true).Find(&missedDrills)
+	missedDrillCount := int64(len(missedDrills))
 
 	mScore := 100.0
 	if totalTasks > 0 {
@@ -56,10 +59,12 @@ func (s *ComplianceService) GetShipCompliance(shipID string) (*ComplianceReport,
 	overall := (mScore + dScore) / 2.0
 
 	return &ComplianceReport{
-		MaintenanceScore: mScore,
-		DrillScore:       dScore,
-		OverallScore:     overall,
-		OverdueTasks:     overdueTasks,
-		MissedDrills:     missedDrills,
+		MaintenanceScore:   mScore,
+		DrillScore:         dScore,
+		AttendedDrillCount: attendedDrills,
+		MissedDrillCount:   missedDrillCount,
+		OverallScore:       overall,
+		OverdueTasks:       overdueTasks,
+		MissedDrills:       missedDrills,
 	}, nil
 }

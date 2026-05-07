@@ -36,8 +36,9 @@ func GetTasks(c *fiber.Ctx) error {
 	shipID := c.Query("ship_id")
 	status := c.Query("status")
 	date := c.Query("date")
-	
-	tasks, err := taskService.GetTasks(shipID, status, date)
+	assignedTo := c.Query("assigned_to")
+
+	tasks, err := taskService.GetTasks(shipID, status, date, assignedTo)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
