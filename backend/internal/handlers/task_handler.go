@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/ashmitsharp/fathom/internal/models"
 	"github.com/ashmitsharp/fathom/internal/services"
 	"github.com/gofiber/fiber/v2"
@@ -48,14 +50,12 @@ func UpdateTaskStatus(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
-	
-	crewIDVal := c.Locals("user_id")
-	crewIDStr, ok := crewIDVal.(string)
-	if !ok {
-		// Just in case it's parsed as UUID in claims
-		crewIDStr = c.Locals("user_id").(string) 
+
+	crewIDStr := fmt.Sprintf("%v", c.Locals("user_id"))
+	crewID, err := uuid.Parse(crewIDStr)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user identity"})
 	}
-	crewID, _ := uuid.Parse(crewIDStr)
 
 	var input struct {
 		Status string `json:"status"`
@@ -63,7 +63,7 @@ func UpdateTaskStatus(c *fiber.Ctx) error {
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
-	
+
 	if err := taskService.UpdateTaskStatus(id, crewID, input.Status); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -77,12 +77,11 @@ func AddTaskNotes(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
 
-	crewIDVal := c.Locals("user_id")
-	crewIDStr, ok := crewIDVal.(string)
-	if !ok {
-		crewIDStr = c.Locals("user_id").(string)
+	crewIDStr := fmt.Sprintf("%v", c.Locals("user_id"))
+	crewID, err := uuid.Parse(crewIDStr)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user identity"})
 	}
-	crewID, _ := uuid.Parse(crewIDStr)
 
 	var input struct {
 		Notes string `json:"notes"`

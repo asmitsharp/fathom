@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Anchor } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +37,11 @@ export const Login = () => {
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="input-field" required />
           <button type="submit" className="btn-primary mt-2">Access System</button>
         </form>
+
+        <p className="text-center text-marine-muted text-sm mt-6">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-marine-cyan hover:text-marine-cyan-hover">Sign up</Link>
+        </p>
       </div>
     </div>
   );

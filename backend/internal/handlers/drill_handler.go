@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/ashmitsharp/fathom/internal/models"
 	"github.com/ashmitsharp/fathom/internal/services"
 	"github.com/gofiber/fiber/v2"
@@ -47,12 +49,11 @@ func AttendDrill(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
 
-	crewIDVal := c.Locals("user_id")
-	crewIDStr, ok := crewIDVal.(string)
-	if !ok {
-		crewIDStr = c.Locals("user_id").(string)
+	crewIDStr := fmt.Sprintf("%v", c.Locals("user_id"))
+	crewID, err := uuid.Parse(crewIDStr)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user identity"})
 	}
-	crewID, _ := uuid.Parse(crewIDStr)
 
 	if err := drillService.AttendDrill(id, crewID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

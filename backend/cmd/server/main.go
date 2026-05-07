@@ -31,6 +31,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
+		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
@@ -46,31 +47,32 @@ func main() {
 	api := app.Group("/api")
 
 	// --- PUBLIC ROUTES ---
-	handlers.SetupAuthRoutes(api)
+	authGroup := api.Group("/auth")
+	handlers.SetupAuthRoutes(authGroup)
 
-	// --- PROTECTED ROUTES (Requires valid JWT) ---
-	protected := api.Group("/", middleware.Protected())
+	// --- PROTECTED ROUTES ---
 	adminOnly := middleware.RequireRole("admin")
+	protected := middleware.Protected()
 
 	// Ships (Admin Only)
-	shipsGroup := protected.Group("/ships", adminOnly)
+	shipsGroup := api.Group("/ships", protected, adminOnly)
 	handlers.SetupShipRoutes(shipsGroup)
 
 	// Maintenance Tasks
-	tasksGroup := protected.Group("/tasks")
-	tasksGroup.Post("/", adminOnly, handlers.CreateTask) // Admin only
-	tasksGroup.Get("/", handlers.GetTasks)                // Crew & Admin
-	tasksGroup.Patch("/:id/status", handlers.UpdateTaskStatus) // Crew
-	tasksGroup.Post("/:id/notes", handlers.AddTaskNotes)       // Crew
+	tasksGroup := api.Group("/tasks", protected)
+	tasksGroup.Post("/", adminOnly, handlers.CreateTask)
+	tasksGroup.Get("/", handlers.GetTasks)
+	tasksGroup.Patch("/:id/status", handlers.UpdateTaskStatus)
+	tasksGroup.Post("/:id/notes", handlers.AddTaskNotes)
 
 	// Safety Drills
-	drillsGroup := protected.Group("/drills")
-	drillsGroup.Post("/", adminOnly, handlers.CreateDrill) // Admin only
-	drillsGroup.Get("/", handlers.GetDrills)               // Crew & Admin
-	drillsGroup.Post("/:id/attend", handlers.AttendDrill)  // Crew
+	drillsGroup := api.Group("/drills", protected)
+	drillsGroup.Post("/", adminOnly, handlers.CreateDrill)
+	drillsGroup.Get("/", handlers.GetDrills)
+	drillsGroup.Post("/:id/attend", handlers.AttendDrill)
 
 	// Compliance (Admin Only)
-	complianceGroup := protected.Group("/compliance", adminOnly)
+	complianceGroup := api.Group("/compliance", protected, adminOnly)
 	handlers.SetupComplianceRoutes(complianceGroup)
 
 	// 5. Start the server
