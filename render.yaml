@@ -30,7 +30,6 @@ services:
   # 3. React Frontend Static Site
   - type: web
     name: fathom-frontend
-    plan: free
     env: static
     rootDir: frontend
     buildCommand: npm install && npm run build
