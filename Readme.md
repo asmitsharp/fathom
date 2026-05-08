@@ -2,6 +2,19 @@
 
 A full-stack maritime operations and compliance platform built to streamline ship maintenance and safety drill tracking.
 
+## Live Demo & Credentials
+
+The application is fully deployed and can be tested here:
+**URL:** [https://fathom-frontend.onrender.com/](https://fathom-frontend.onrender.com/)
+
+**Admin Credentials:**
+- Email: `admin@gmail.com`
+- Password: `Techash11@`
+
+**Crew Credentials:**
+- Email: `testcrew@gmail.com`
+- Password: `testcrew11@`
+
 ## Architecture Decisions
 
 When designing the Fathom platform, I made several deliberate architectural choices to ensure scalability, performance, and maintainability:
