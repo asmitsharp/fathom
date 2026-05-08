@@ -62,6 +62,17 @@ export const CrewDashboard = () => {
                     {t.status}
                   </span>
                 </div>
+                {t.status === "Pending" && (
+                  <button
+                    className="btn-primary text-sm w-full mb-3"
+                    disabled={updateTaskStatus.isPending}
+                    onClick={() =>
+                      updateTaskStatus.mutate({ id: t.id, status: "In Progress" })
+                    }
+                  >
+                    {updateTaskStatus.isPending ? "Updating…" : "Start Task"}
+                  </button>
+                )}
                 {t.status !== "Completed" && (
                   <button
                     className="btn-success text-sm w-full"
