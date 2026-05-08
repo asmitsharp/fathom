@@ -91,7 +91,7 @@ export const ComplianceCharts = ({
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => [
+                formatter={(value: any) => [
                   value,
                   totalDrills > 0 ? "Drills" : "No drills",
                 ]}
